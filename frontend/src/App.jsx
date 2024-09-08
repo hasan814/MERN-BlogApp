@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
+import FooterCom from "./components/layouts/FooterCom";
 import Projects from "./pages/Projects";
 import Header from "./components/layouts/Header";
 import SignIn from "./pages/SignIn";
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/projects" element={<Projects />} />
       </Routes>
+      <FooterCom />
     </BrowserRouter>
   );
 };
