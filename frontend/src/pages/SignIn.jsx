@@ -1,16 +1,26 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
+import {
+  signInFailure,
+  signInStart,
+  signInSuccess,
+} from "../redux/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 const SignIn = () => {
+  // ============ Dispatch ============
+  const dispatch = useDispatch();
+
   // ============ Navigate ============
   const navigate = useNavigate();
 
   // ============= State ============
   const [formData, setformData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
 
+  // ============ Selector ============
+  const { loading, error: errorMessage } = useSelector((state) => state.user);
   // ============ Function ============
   const changeHandler = (event) => {
     const { id, value } = event.target;
@@ -20,23 +30,26 @@ const SignIn = () => {
   const submitHandler = async (event) => {
     event.preventDefault();
     if (!formData.email || !formData.password)
-      return setErrorMessage("Please fill out all fields.");
+      return dispatch(signInFailure("Please fill out all fields."));
     try {
-      setLoading(true);
-      setErrorMessage(null);
+      dispatch(signInStart());
       const response = await fetch("/api/auth/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       const responseData = await response.json();
-      if (responseData.message === false)
-        return setErrorMessage(responseData.message);
-      setLoading(false);
-      if (response.ok) navigate("/");
+      if (responseData.success === false) {
+        dispatch(signInFailure(responseData.message));
+      }
+      if (response.ok) {
+        toast.success(responseData.message);
+        dispatch(signInSuccess(responseData.user));
+        navigate("/");
+      }
     } catch (error) {
-      setErrorMessage(error.message);
-      setLoading(false);
+      console.log("error", error);
+      dispatch(signInFailure(error.message));
     }
   };
 

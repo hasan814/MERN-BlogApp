@@ -1,6 +1,7 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   // ============ Navigate ============
@@ -33,7 +34,8 @@ const SignUp = () => {
       if (responseData.message === false)
         return setErrorMessage(responseData.message);
       setLoading(false);
-      if (response.ok) navigate("/sign-in");
+      if (response.ok)
+        toast.success(responseData.message), navigate("/sign-in");
     } catch (error) {
       setErrorMessage(error.message);
       setLoading(false);
