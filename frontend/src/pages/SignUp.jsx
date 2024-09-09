@@ -30,7 +30,8 @@ const SignUp = () => {
         body: JSON.stringify(formData),
       });
       const responseData = await response.json();
-      if (responseData.message === false) return setErrorMessage(data.message);
+      if (responseData.message === false)
+        return setErrorMessage(responseData.message);
       setLoading(false);
       if (response.ok) navigate("/sign-in");
     } catch (error) {
@@ -78,7 +79,7 @@ const SignUp = () => {
               <TextInput
                 type="password"
                 id="password"
-                placeholder="Password..."
+                placeholder="**********"
                 onChange={changeHandler}
               />
             </div>
