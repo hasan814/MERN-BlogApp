@@ -24,7 +24,7 @@ const DashSidebar = () => {
 
   // ============ Rendering ===============
   return (
-    <Sidebar className="w-full md:w-56">
+    <Sidebar className="w-full md:w-560">
       <SidebarItems>
         <SidebarItemGroup>
           <Link to={"/dashboard?tab=profile"}>
@@ -33,6 +33,7 @@ const DashSidebar = () => {
               icon={HiUser}
               label={"User"}
               labelColor="dark"
+              as="div"
             >
               Profile
             </SidebarItem>
