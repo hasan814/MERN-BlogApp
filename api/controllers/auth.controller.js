@@ -51,7 +51,7 @@ export const signin = async (req, res, next) => {
     }
 
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h", // Add expiration to token for security
+      expiresIn: "1h",
     });
 
     // Exclude password from user data in the response

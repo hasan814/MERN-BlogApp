@@ -1,51 +1,46 @@
-import { useEffect, useRef, useState } from "react";
-import { Alert, Button, TextInput } from "flowbite-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { Alert, Button, TextInput, Spinner } from "flowbite-react";
+import { useDispatch, useSelector } from "react-redux";
 import { CircularProgressbar } from "react-circular-progressbar";
-import { useSelector } from "react-redux";
 import { app } from "../../firebase";
+import {
+  updateStart,
+  updateFailure,
+  updateSuccess,
+} from "../../redux/user/userSlice";
 import {
   getDownloadURL,
   getStorage,
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-
+import toast from "react-hot-toast";
 import "react-circular-progressbar/dist/styles.css";
 
 const DashProfile = () => {
-  // ============== State =============
-  const [imageFile, setimageFile] = useState(null);
-  const [imageFileUrl, setimageFileUrl] = useState(null);
-  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
-  const [imageFileUploadError, setImageFileUploadError] = useState(null);
-
-  // ============== Ref =============
-  const filePickerRef = useRef();
+  const dispatch = useDispatch();
 
   // ============== Redux =============
   const { currentUser } = useSelector((state) => state.user);
 
-  // ============== Function =============
-  const imageChangeHandler = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setimageFile(file);
-      setimageFileUrl(URL.createObjectURL(file));
-    }
-  };
+  // ============== State =============
+  const [formData, setFormData] = useState({
+    username: currentUser?.username || "",
+    email: currentUser?.email || "",
+    profilePicture: currentUser?.profilePicture || "",
+  });
+  const [imageFile, setimageFile] = useState(null);
+  const [imageFileUrl, setimageFileUrl] = useState(null);
+  const [imageFileUploadError, setImageFileUploadError] = useState(null);
+  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ============== Function =============
-  const uploadImage = async () => {
-    // service firebase.storage {
-    //   match /b/{bucket}/o {
-    //     match /{allPaths=**} {
-    //       allow read;
-    //       allow write:if
-    //       request.resource.size<2*1024*1024 &&
-    //       request.resource.contentType.matches('image/.*')
-    //     }
-    //   }
-    // }
+  // ============== Ref ==============
+  const filePickerRef = useRef();
+
+  // ============== Memoized uploadImage ==============
+  const uploadImage = useCallback(async () => {
+    setImageFileUploadError(null);
     const storage = getStorage(app);
     const fileName = new Date().getTime() + imageFile.name;
     const storageRef = ref(storage, fileName);
@@ -58,9 +53,7 @@ const DashProfile = () => {
         setImageFileUploadProgress(progress.toFixed(0));
       },
       (error) => {
-        setImageFileUploadError(
-          "Could not  upload image (File must be less than 2MB"
-        );
+        setImageFileUploadError("Image upload failed: " + error.message);
         setImageFileUploadProgress(null);
         setimageFile(null);
         setimageFileUrl(null);
@@ -68,21 +61,63 @@ const DashProfile = () => {
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setimageFileUrl(downloadURL);
+          setFormData((prev) => ({ ...prev, profilePicture: downloadURL }));
         });
       }
     );
-  };
-
-  // ============== Effect =============
-  useEffect(() => {
-    if (imageFile) uploadImage();
   }, [imageFile]);
 
-  // ============== Rendering =============
+  // ============== useEffect ==============
+  useEffect(() => {
+    if (imageFile) uploadImage();
+  }, [imageFile, uploadImage]);
+
+  // ============== Handlers ==============
+  const imageChangeHandler = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setimageFile(file);
+      setimageFileUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const changeHandler = (event) => {
+    const { id, value } = event.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const submitHandler = async (event) => {
+    event.preventDefault();
+    if (Object.keys(formData).length === 0) return;
+    setIsSubmitting(true);
+    try {
+      dispatch(updateStart());
+      const response = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        dispatch(updateFailure(responseData.message));
+        toast.error(responseData.message);
+      } else {
+        dispatch(updateSuccess(responseData));
+        toast.success("Profile Updated Successfully");
+      }
+    } catch (error) {
+      dispatch(updateFailure(error.message));
+      toast.error("Update failed: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ============== Rendering ==============
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
       <h1 className="my-7 text-center font-semibold text-3xl">Profile</h1>
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={submitHandler}>
         <input
           type="file"
           hidden
@@ -125,27 +160,36 @@ const DashProfile = () => {
             }`}
           />
         </div>
-        {imageFileUploadError && <Alert color="failure">{}</Alert>}
+        {imageFileUploadError && (
+          <Alert color="failure">{imageFileUploadError}</Alert>
+        )}
         <TextInput
           type="text"
           id="username"
           placeholder="Username..."
-          defaultValue={currentUser.username}
+          onChange={changeHandler}
+          value={formData.username}
         />
         <TextInput
           type="email"
           id="email"
           placeholder="Email..."
-          defaultValue={currentUser.email}
+          onChange={changeHandler}
+          value={formData.email}
         />
         <TextInput
-          type="text"
+          type="password"
           id="password"
-          placeholder="Password..."
-          defaultValue="***************"
+          placeholder="Enter new password..."
+          onChange={changeHandler}
         />
-        <Button type="password" gradientDuoTone={"purpleToBlue"} outline>
-          Update
+        <Button
+          type="submit"
+          gradientDuoTone={"purpleToBlue"}
+          outline
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <Spinner size="sm" light /> : "Update"}
         </Button>
       </form>
       <div className="text-red-500 flex justify-between mt-5">
