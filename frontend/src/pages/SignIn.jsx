@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import OAuth from "../components/modules/OAuth";
 
 const SignIn = () => {
   // ============ Dispatch ============
@@ -101,10 +102,11 @@ const SignIn = () => {
                 "Sign In"
               )}
             </Button>
+            <OAuth />
           </form>
           <div className="flex gap-2 text-sm mt-5">
             <span>Don&apos;t Have an Account?</span>
-            <Link to={"/sign-in"} className="text-blue-500">
+            <Link to={"/sign-up"} className="text-blue-500">
               Sign Up
             </Link>
           </div>
