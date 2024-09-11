@@ -6,11 +6,14 @@ import { Provider } from "react-redux";
 import App from "./App.jsx";
 
 import "./index.css";
+import ThemeProvider from "./components/modules/ThemeProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <PersistGate persistor={persistor}>
     <Provider store={store}>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </Provider>
   </PersistGate>
 );
