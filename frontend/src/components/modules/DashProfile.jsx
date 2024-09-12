@@ -3,7 +3,6 @@ import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { app } from "../../firebase";
-
 import {
   Alert,
   Button,
@@ -21,6 +20,7 @@ import {
   deleteUserFailure,
   deleteUserStart,
   deleteUserSuccess,
+  signoutSuccess,
 } from "../../redux/user/userSlice";
 
 import {
@@ -34,85 +34,106 @@ import toast from "react-hot-toast";
 import "react-circular-progressbar/dist/styles.css";
 
 const DashProfile = () => {
+  // ============== Dispatch ===============
   const dispatch = useDispatch();
 
-  // ============== Redux =============
+  // ============== Redux ===============
   const { currentUser } = useSelector((state) => state.user);
 
-  // ============== State =============
-  const [imageFile, setimageFile] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [imageFileUrl, setimageFileUrl] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageFileUploadError, setImageFileUploadError] = useState(null);
-  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
-  const [formData, setFormData] = useState({
-    username: currentUser?.username || "",
-    email: currentUser?.email || "",
-    profilePicture: currentUser?.profilePicture || "",
+  // ============== State ===============
+  const [state, setState] = useState({
+    imageFile: null,
+    imageFileUrl: currentUser?.profilePicture || "",
+    showModal: false,
+    isSubmitting: false,
+    imageFileUploadError: null,
+    imageFileUploadProgress: null,
+    formData: {
+      username: currentUser?.username || "",
+      email: currentUser?.email || "",
+      profilePicture: currentUser?.profilePicture || "",
+    },
   });
 
-  // ============== Ref ==============
+  // ============== Ref ===============
   const filePickerRef = useRef();
 
-  // ============== Memoized uploadImage ==============
+  // ============== Callback Function ===============
   const uploadImage = useCallback(async () => {
-    setImageFileUploadError(null);
+    setState((prev) => ({ ...prev, imageFileUploadError: null }));
     const storage = getStorage(app);
-    const fileName = new Date().getTime() + imageFile.name;
+    const fileName = `${new Date().getTime()}_${state.imageFile.name}`;
     const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+    const uploadTask = uploadBytesResumable(storageRef, state.imageFile);
+
     uploadTask.on(
       "state_changed",
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setImageFileUploadProgress(progress.toFixed(0));
+        setState((prev) => ({
+          ...prev,
+          imageFileUploadProgress: progress.toFixed(0),
+        }));
       },
       (error) => {
-        setImageFileUploadError("Image upload failed: " + error.message);
-        setImageFileUploadProgress(null);
-        setimageFile(null);
-        setimageFileUrl(null);
+        setState({
+          imageFileUploadError: `Image upload failed: ${error.message}`,
+          imageFileUploadProgress: null,
+          imageFile: null,
+          imageFileUrl: null,
+        });
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setimageFileUrl(downloadURL);
-          setFormData((prev) => ({ ...prev, profilePicture: downloadURL }));
+          setState((prev) => ({
+            ...prev,
+            imageFileUrl: downloadURL,
+            formData: { ...prev.formData, profilePicture: downloadURL },
+          }));
         });
       }
     );
-  }, [imageFile]);
+  }, [state.imageFile]);
 
-  // ============== useEffect ==============
+  // ============== Effect Function ===============
   useEffect(() => {
-    if (imageFile) uploadImage();
-  }, [imageFile, uploadImage]);
+    if (state.imageFile) uploadImage();
+  }, [state.imageFile, uploadImage]);
 
-  // ============== Handlers ==============
+  // ============== Image Function ===============
   const imageChangeHandler = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setimageFile(file);
-      setimageFileUrl(URL.createObjectURL(file));
+      setState((prev) => ({
+        ...prev,
+        imageFile: file,
+        imageFileUrl: URL.createObjectURL(file),
+      }));
     }
   };
 
+  // ============== Change Function ===============
   const changeHandler = (event) => {
     const { id, value } = event.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    setState((prev) => ({
+      ...prev,
+      formData: { ...prev.formData, [id]: value },
+    }));
   };
 
+  // ============== Submit Function ===============
   const submitHandler = async (event) => {
     event.preventDefault();
-    if (Object.keys(formData).length === 0) return;
-    setIsSubmitting(true);
+    if (Object.keys(state.formData).length === 0) return;
+    setState((prev) => ({ ...prev, isSubmitting: true }));
+
     try {
       dispatch(updateStart());
       const response = await fetch(`/api/user/update/${currentUser._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(state.formData),
       });
       const responseData = await response.json();
       if (!response.ok) {
@@ -124,16 +145,17 @@ const DashProfile = () => {
       }
     } catch (error) {
       dispatch(updateFailure(error.message));
-      toast.error("Update failed: " + error.message);
+      toast.error(`Update failed: ${error.message}`);
     } finally {
-      setIsSubmitting(false);
+      setState((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
 
+  // ============== Delete Function ===============
   const deleteUserHandler = async () => {
-    setShowModal(false);
+    setState((prev) => ({ ...prev, showModal: false }));
     try {
-      dispatch(deleteUserStart);
+      dispatch(deleteUserStart());
       const response = await fetch(`/api/user/delete/${currentUser._id}`, {
         method: "DELETE",
       });
@@ -149,7 +171,24 @@ const DashProfile = () => {
     }
   };
 
-  // ============== Rendering ==============
+  // ============== Sign Out Function ===============
+  const signoutHandler = async () => {
+    try {
+      const response = await fetch("/api/user/signout", {
+        method: "POST",
+      });
+      const responseData = await response.json();
+      if (!response.ok) toast.error(responseData.message);
+      else {
+        toast.success("Sign Out Successfully");
+        dispatch(signoutSuccess());
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // ============== Rendering ===============
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
       <h1 className="my-7 text-center font-semibold text-3xl">Profile</h1>
@@ -165,10 +204,10 @@ const DashProfile = () => {
           className="w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden relative"
           onClick={() => filePickerRef.current.click()}
         >
-          {imageFileUploadProgress && (
+          {state.imageFileUploadProgress && (
             <CircularProgressbar
-              value={imageFileUploadProgress || 0}
-              text={`${imageFileUploadProgress}%`}
+              value={state.imageFileUploadProgress || 0}
+              text={`${state.imageFileUploadProgress}%`}
               strokeWidth={5}
               styles={{
                 root: {
@@ -180,7 +219,7 @@ const DashProfile = () => {
                 },
                 path: {
                   stroke: `rgba(62, 152, 199, ${
-                    imageFileUploadProgress / 100
+                    state.imageFileUploadProgress / 100
                   })`,
                 },
               }}
@@ -188,55 +227,60 @@ const DashProfile = () => {
           )}
           <img
             alt="user"
-            src={imageFileUrl || currentUser.profilePicture}
+            src={state.imageFileUrl || currentUser.profilePicture}
             className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
-              imageFileUploadProgress &&
-              imageFileUploadProgress < 100 &&
+              state.imageFileUploadProgress &&
+              state.imageFileUploadProgress < 100 &&
               "opacity-60"
             }`}
           />
         </div>
-        {imageFileUploadError && (
-          <Alert color="failure">{imageFileUploadError}</Alert>
+        {state.imageFileUploadError && (
+          <Alert color="failure">{state.imageFileUploadError}</Alert>
         )}
         <TextInput
           type="text"
           id="username"
           placeholder="Username..."
           onChange={changeHandler}
-          value={formData.username}
+          value={state.formData.username}
         />
         <TextInput
-          type="email"
           id="email"
+          type="email"
           placeholder="Email..."
           onChange={changeHandler}
-          value={formData.email}
+          value={state.formData.email}
         />
         <TextInput
-          type="password"
           id="password"
-          placeholder="Enter new password..."
+          type="password"
           onChange={changeHandler}
+          placeholder="Enter new password..."
         />
         <Button
-          type="submit"
-          gradientDuoTone={"purpleToBlue"}
           outline
-          disabled={isSubmitting}
+          type="submit"
+          disabled={state.isSubmitting}
+          gradientDuoTone={"purpleToBlue"}
         >
-          {isSubmitting ? <Spinner size="sm" light /> : "Update"}
+          {state.isSubmitting ? <Spinner size="sm" light /> : "Update"}
         </Button>
       </form>
       <div className="text-red-500 flex justify-between mt-5">
-        <span className="cursor-pointer" onClick={() => setShowModal(true)}>
+        <span
+          className="cursor-pointer"
+          onClick={() => setState((prev) => ({ ...prev, showModal: true }))}
+        >
           Delete Account
         </span>
-        <span className="cursor-pointer">Sign Out</span>
+        <span onClick={signoutHandler} className="cursor-pointer">
+          Sign Out
+        </span>
       </div>
       <Modal
-        show={showModal}
-        onClose={() => setShowModal(false)}
+        show={state.showModal}
+        onClose={() => setState((prev) => ({ ...prev, showModal: false }))}
         popup
         size="md"
       >
@@ -251,7 +295,12 @@ const DashProfile = () => {
               <Button color={"failure"} onClick={deleteUserHandler}>
                 Yes, I&apos;m sure
               </Button>
-              <Button color={"gray"} onClick={() => setShowModal(false)}>
+              <Button
+                color={"gray"}
+                onClick={() =>
+                  setState((prev) => ({ ...prev, showModal: false }))
+                }
+              >
                 No, Cancel
               </Button>
             </div>

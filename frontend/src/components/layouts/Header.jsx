@@ -1,3 +1,9 @@
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useLocation } from "react-router-dom";
+import { AiOutlineSearch } from "react-icons/ai";
+import { signoutSuccess } from "../../redux/user/userSlice";
+import { FaMoon, FaSun } from "react-icons/fa";
+import { toggleTheme } from "../../redux/theme/themeSlice";
 import {
   Avatar,
   Button,
@@ -10,11 +16,8 @@ import {
   NavbarLink,
   TextInput,
 } from "flowbite-react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useLocation } from "react-router-dom";
-import { AiOutlineSearch } from "react-icons/ai";
-import { FaMoon, FaSun } from "react-icons/fa";
-import { toggleTheme } from "../../redux/theme/themeSlice";
+
+import toast from "react-hot-toast";
 
 const Header = () => {
   // ================= Location ================
@@ -26,6 +29,20 @@ const Header = () => {
   // ================= Redux Toolkit ================
   const { currentUser } = useSelector((state) => state.user);
   const { theme } = useSelector((state) => state.theme);
+
+  // ================= Function ================
+  const signoutHandler = async () => {
+    try {
+      const response = await fetch("/api/user/signout", {
+        method: "POST",
+      });
+      const responseData = await response.json();
+      if (!response.ok) toast.error(responseData.message);
+      else toast.success("Sign Out Successfully"), dispatch(signoutSuccess());
+    } catch (error) {
+      toast.error(error);
+    }
+  };
 
   // ================= Rendering ================
   return (
@@ -76,7 +93,7 @@ const Header = () => {
               <Link to={"/dashboard?tab=profile"}>
                 <DropdownItem>Profile</DropdownItem>
                 <DropdownDivider />
-                <DropdownItem>Sign Out</DropdownItem>
+                <DropdownItem onClick={signoutHandler}>Sign Out</DropdownItem>
               </Link>
             </Dropdown>
           ) : (
