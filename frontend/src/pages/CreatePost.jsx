@@ -1,7 +1,17 @@
-import { Alert, Button, FileInput, Select, TextInput } from "flowbite-react";
 import { CircularProgressbar } from "react-circular-progressbar";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { app } from "../firebase";
+
+import {
+  Alert,
+  Button,
+  FileInput,
+  Select,
+  TextInput,
+  Toast,
+} from "flowbite-react";
+
 import {
   getDownloadURL,
   getStorage,
@@ -13,13 +23,17 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 const CreatePost = () => {
+  // =============== Navigate =============
+  const navigate = useNavigate();
+
   // =============== State =============
   const [file, setFile] = useState(null);
   const [formData, setFormData] = useState({});
-  const [imageUploadProgress, setImageUploadProgress] = useState(null);
+  const [publishError, setPublishError] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
+  const [imageUploadProgress, setImageUploadProgress] = useState(null);
 
-  // =============== Function =============
+  // =============== Image Function =============
   const imageUploadHandler = async () => {
     try {
       if (!file) {
@@ -39,6 +53,7 @@ const CreatePost = () => {
           setImageUploadProgress(progress.toFixed(0));
         },
         (error) => {
+          console.log(error);
           setImageUploadError("Image Upload Failed");
           setImageUploadProgress(null);
         },
@@ -57,20 +72,52 @@ const CreatePost = () => {
     }
   };
 
+  // =============== Submit Function =============
+  const submitHandler = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await fetch("/api/post/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        setPublishError(responseData.message);
+        return;
+      }
+      if (response.ok) {
+        setPublishError(null);
+        navigate(`/post/${responseData.slug}`);
+        Toast.success("Post Published Succesfully");
+      }
+    } catch (error) {
+      console.log(error);
+      setPublishError(null);
+    }
+  };
+
   // =============== Rendering =============
   return (
     <div className="p-3 max-w-3xl mx-auto min-h-screen">
       <h1 className="text-center text-3xl my-7 font-semibold">Create a Post</h1>
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4" onSubmit={submitHandler}>
         <div className="flex flex-col gap-4 sm:flex-row justify-between">
           <TextInput
-            type="text"
-            placeholder="Title"
             required
             id="title"
+            type="text"
             className="flex-1"
+            placeholder="Title"
+            onChange={(event) =>
+              setFormData({ ...formData, title: event.target.value })
+            }
           />
-          <Select>
+          <Select
+            onChange={(event) =>
+              setFormData({ ...formData, category: event.target.value })
+            }
+          >
             <option value="uncategorized">Select a Category</option>
             <option value="javascript">JavaScript</option>
             <option value="reactjs">React.js</option>
@@ -112,14 +159,18 @@ const CreatePost = () => {
           />
         )}
         <ReactQuill
-          theme="snow"
           required
-          placeholder="Write Something..."
+          theme="snow"
           className="h-72 mb-12"
+          placeholder="Write Something..."
+          onChange={(value) => {
+            setFormData({ ...formData, content: value });
+          }}
         />
         <Button type="submit" gradientDuoTone={"purpleToPink"}>
           Publish
         </Button>
+        {publishError && <Alert color={"failure"}>{publishError}</Alert>}
       </form>
     </div>
   );
