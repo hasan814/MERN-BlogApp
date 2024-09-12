@@ -1,8 +1,8 @@
-import { HiArrowSmRight, HiUser } from "react-icons/hi";
+import { HiArrowSmRight, HiDocumentText, HiUser } from "react-icons/hi";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { signoutSuccess } from "../../redux/user/userSlice";
-import { useDispatch } from "react-redux";
 
 import {
   Sidebar,
@@ -14,6 +14,9 @@ import {
 import toast from "react-hot-toast";
 
 const DashSidebar = () => {
+  // ============ Redux =============
+  const { currentUser } = useSelector((state) => state.user);
+
   // ============ Dispatch =============
   const dispatch = useDispatch();
 
@@ -50,18 +53,29 @@ const DashSidebar = () => {
   return (
     <Sidebar className="w-full md:w-560">
       <SidebarItems>
-        <SidebarItemGroup>
+        <SidebarItemGroup className="flex flex-col gap-1">
           <Link to={"/dashboard?tab=profile"}>
             <SidebarItem
               active={tab === "profile"}
               icon={HiUser}
-              label={"User"}
+              label={currentUser.isAdmin ? "Admin" : "User"}
               labelColor="dark"
               as="div"
             >
               Profile
             </SidebarItem>
           </Link>
+          {currentUser.isAdmin && (
+            <Link to={"/dashboard?tab=posts"}>
+              <SidebarItem
+                active={tab === "posts"}
+                icon={HiDocumentText}
+                as="div"
+              >
+                Posts
+              </SidebarItem>
+            </Link>
+          )}
           <SidebarItem
             icon={HiArrowSmRight}
             onClick={signOutHandler}
