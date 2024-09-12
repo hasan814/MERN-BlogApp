@@ -9,6 +9,7 @@ const userSchema = new Schema(
       type: String,
       default: "https://img.icons8.com/color/48/gender-neutral-user.png",
     },
+    isAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
