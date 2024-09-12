@@ -1,19 +1,35 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Alert, Button, TextInput, Spinner } from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { app } from "../../firebase";
+
+import {
+  Alert,
+  Button,
+  TextInput,
+  Spinner,
+  Modal,
+  ModalHeader,
+  ModalBody,
+} from "flowbite-react";
+
 import {
   updateStart,
   updateFailure,
   updateSuccess,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
 } from "../../redux/user/userSlice";
+
 import {
   getDownloadURL,
   getStorage,
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
+
 import toast from "react-hot-toast";
 import "react-circular-progressbar/dist/styles.css";
 
@@ -24,16 +40,17 @@ const DashProfile = () => {
   const { currentUser } = useSelector((state) => state.user);
 
   // ============== State =============
+  const [imageFile, setimageFile] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [imageFileUrl, setimageFileUrl] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFileUploadError, setImageFileUploadError] = useState(null);
+  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
   const [formData, setFormData] = useState({
     username: currentUser?.username || "",
     email: currentUser?.email || "",
     profilePicture: currentUser?.profilePicture || "",
   });
-  const [imageFile, setimageFile] = useState(null);
-  const [imageFileUrl, setimageFileUrl] = useState(null);
-  const [imageFileUploadError, setImageFileUploadError] = useState(null);
-  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ============== Ref ==============
   const filePickerRef = useRef();
@@ -110,6 +127,25 @@ const DashProfile = () => {
       toast.error("Update failed: " + error.message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const deleteUserHandler = async () => {
+    setShowModal(false);
+    try {
+      dispatch(deleteUserStart);
+      const response = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        dispatch(deleteUserFailure(responseData.message));
+      } else {
+        dispatch(deleteUserSuccess(responseData.message));
+        toast.success("Profile Deleted Successfully");
+      }
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
     }
   };
 
@@ -193,9 +229,35 @@ const DashProfile = () => {
         </Button>
       </form>
       <div className="text-red-500 flex justify-between mt-5">
-        <span className="cursor-pointer">Delete Account</span>
+        <span className="cursor-pointer" onClick={() => setShowModal(true)}>
+          Delete Account
+        </span>
         <span className="cursor-pointer">Sign Out</span>
       </div>
+      <Modal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        popup
+        size="md"
+      >
+        <ModalHeader />
+        <ModalBody>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete your account?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Button color={"failure"} onClick={deleteUserHandler}>
+                Yes, I&apos;m sure
+              </Button>
+              <Button color={"gray"} onClick={() => setShowModal(false)}>
+                No, Cancel
+              </Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
     </div>
   );
 };
