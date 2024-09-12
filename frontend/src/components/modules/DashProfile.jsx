@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgressbar } from "react-circular-progressbar";
+import { Link } from "react-router-dom";
 import { app } from "../../firebase";
 import {
   Alert,
@@ -266,6 +267,17 @@ const DashProfile = () => {
         >
           {state.isSubmitting ? <Spinner size="sm" light /> : "Update"}
         </Button>
+        {currentUser.isAdmin && (
+          <Link to="/create-post">
+            <Button
+              type="button"
+              gradientDuoTone={"purpleToPink"}
+              className="w-full"
+            >
+              Create a Post
+            </Button>
+          </Link>
+        )}
       </form>
       <div className="text-red-500 flex justify-between mt-5">
         <span

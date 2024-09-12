@@ -1,5 +1,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+
+import OnlyAdminPrivateRoute from "./components/modules/OnlyAdminPrivateRoute";
+import PrivateProvider from "./components/modules/PrivateProvider";
+import CreatePost from "./pages/CreatePost";
 import Dashboard from "./pages/Dashboard";
 import FooterCom from "./components/layouts/FooterCom";
 import Projects from "./pages/Projects";
@@ -8,7 +12,6 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import About from "./pages/About";
 import Home from "./pages/Home";
-import PrivateProvider from "./components/modules/PrivateProvider";
 
 const App = () => {
   return (
@@ -22,6 +25,9 @@ const App = () => {
         <Route path="/sign-up" element={<SignUp />} />
         <Route element={<PrivateProvider />}>
           <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+        <Route element={<OnlyAdminPrivateRoute />}>
+          <Route path="/create-post" element={<CreatePost />} />
         </Route>
         <Route path="/projects" element={<Projects />} />
       </Routes>
