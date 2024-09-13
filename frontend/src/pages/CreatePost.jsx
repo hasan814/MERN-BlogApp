@@ -121,7 +121,15 @@ const CreatePost = () => {
             <option value="uncategorized">Select a Category</option>
             <option value="javascript">JavaScript</option>
             <option value="reactjs">React.js</option>
+            <option value="nextjs">API Development</option>
+            <option value="nextjs">Web Design</option>
+            <option value="nextjs">Full-Stack</option>
+            <option value="nextjs">TypeScript</option>
+            <option value="nextjs">Security</option>
             <option value="nextjs">Next.js</option>
+            <option value="nextjs">Node.js</option>
+            <option value="nextjs">Cloud</option>
+            <option value="nextjs">CSS</option>
           </Select>
         </div>
         <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">

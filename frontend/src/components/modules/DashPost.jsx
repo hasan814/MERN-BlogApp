@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 import {
+  Button,
   Table,
   TableBody,
   TableCell,
@@ -10,13 +12,13 @@ import {
   TableHeadCell,
   TableRow,
 } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { DotLoader } from "react-spinners";
 
 const DashPost = () => {
   // ==================== State ==============
-  const [userPosts, setUserPosts] = useState();
+  const [userPosts, setUserPosts] = useState([]);
+  const [showMore, setShowMore] = useState(true);
 
-  console.log(userPosts);
   // ==================== Redux ==============
   const { currentUser } = useSelector((state) => state.user);
 
@@ -30,6 +32,9 @@ const DashPost = () => {
         const responseData = await response.json();
         if (response.ok) {
           setUserPosts(responseData.posts);
+          if (responseData.length < 9) {
+            setShowMore(false);
+          }
         }
       } catch (error) {
         console.log(error);
@@ -37,6 +42,24 @@ const DashPost = () => {
     };
     if (currentUser.isAdmin) fetchPosts();
   }, [currentUser._id, currentUser.isAdmin]);
+
+  // ==================== Function ==============
+  const showMoreHandler = async () => {
+    const startIndex = userPosts.length;
+    try {
+      const response = await fetch(
+        `/api/post/getposts?userId=${currentUser._id}&startIndex=${startIndex}`
+      );
+      const responseData = await response.json();
+      if (response.ok) {
+        setUserPosts((prev) => [...prev, ...responseData.posts]);
+        if (responseData.posts.length < 9) setShowMore(false);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   // ==================== Rendering ==============
   return (
     <div
@@ -52,7 +75,7 @@ const DashPost = () => {
             dark:scrollbar-thumb-slate-500 
        "
     >
-      {currentUser.isAdmin && userPosts?.length ? (
+      {currentUser.isAdmin && userPosts.length ? (
         <>
           <Table className="shadow-lg" hoverable>
             <TableHead>
@@ -80,7 +103,7 @@ const DashPost = () => {
                       />
                     </Link>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell>
                     <Link
                       className="font-medium text-gray-900 dark:text-white capitalize"
                       to={`/post/${post.slug}`}
@@ -108,9 +131,20 @@ const DashPost = () => {
               </TableBody>
             ))}
           </Table>
+          {showMore && (
+            <Button
+              onClick={showMoreHandler}
+              className="w-full text-teal-500 self-center text-sm py-7 bg-transparent dark:bg-transparent dark:text-white"
+            >
+              Show More
+            </Button>
+          )}
         </>
       ) : (
-        <p>You have no posts yet!</p>
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <p>You have no posts yet!</p>
+          <DotLoader color="#24d321" />
+        </div>
       )}
     </div>
   );
