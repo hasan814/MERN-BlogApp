@@ -3,21 +3,23 @@ import { Toaster } from "react-hot-toast";
 
 import OnlyAdminPrivateRoute from "./components/modules/OnlyAdminPrivateRoute";
 import PrivateProvider from "./components/modules/PrivateProvider";
+import ScrollToTop from "./components/modules/ScrollToTop";
 import CreatePost from "./pages/CreatePost";
 import UpdatePost from "./pages/UpdatePost";
 import Dashboard from "./pages/Dashboard";
 import FooterCom from "./components/layouts/FooterCom";
+import PostPage from "./pages/PostPage";
 import Projects from "./pages/Projects";
 import Header from "./components/layouts/Header";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import About from "./pages/About";
 import Home from "./pages/Home";
-import PostPage from "./pages/PostPage";
 
 const App = () => {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Toaster />
       <Header />
       <Routes>
