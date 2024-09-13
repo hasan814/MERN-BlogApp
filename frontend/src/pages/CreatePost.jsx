@@ -9,7 +9,6 @@ import {
   FileInput,
   Select,
   TextInput,
-  Toast,
 } from "flowbite-react";
 
 import {
@@ -20,6 +19,7 @@ import {
 } from "firebase/storage";
 
 import ReactQuill from "react-quill";
+import toast from 'react-hot-toast'
 import "react-quill/dist/quill.snow.css";
 
 const CreatePost = () => {
@@ -89,7 +89,7 @@ const CreatePost = () => {
       if (response.ok) {
         setPublishError(null);
         navigate(`/post/${responseData.slug}`);
-        Toast.success("Post Published Succesfully");
+        toast.success("Post Published Succesfully");
       }
     } catch (error) {
       console.log(error);
