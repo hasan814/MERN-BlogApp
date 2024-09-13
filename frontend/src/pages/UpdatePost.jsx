@@ -104,7 +104,7 @@ const UpdatePost = () => {
   useEffect(() => {
     try {
       const fetchPost = async () => {
-        const response = await fetch(`/api/post/getposts?postid=${postId}`);
+        const response = await fetch(`/api/post/getposts?postId=${postId}`);
         const responseData = await response.json();
         if (!response.ok) {
           setPublishError(responseData.message);
