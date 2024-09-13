@@ -1,8 +1,16 @@
-import { HiArrowSmRight, HiDocumentText, HiUser } from "react-icons/hi";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { signoutSuccess } from "../../redux/user/userSlice";
+
+import toast from "react-hot-toast";
+
+import {
+  HiArrowSmRight,
+  HiDocumentText,
+  HiOutlineUserGroup,
+  HiUser,
+} from "react-icons/hi";
 
 import {
   Sidebar,
@@ -10,8 +18,6 @@ import {
   SidebarItemGroup,
   SidebarItems,
 } from "flowbite-react";
-
-import toast from "react-hot-toast";
 
 const DashSidebar = () => {
   // ============ Redux =============
@@ -66,15 +72,26 @@ const DashSidebar = () => {
             </SidebarItem>
           </Link>
           {currentUser.isAdmin && (
-            <Link to={"/dashboard?tab=posts"}>
-              <SidebarItem
-                active={tab === "posts"}
-                icon={HiDocumentText}
-                as="div"
-              >
-                Posts
-              </SidebarItem>
-            </Link>
+            <>
+              <Link to={"/dashboard?tab=posts"}>
+                <SidebarItem
+                  active={tab === "posts"}
+                  icon={HiDocumentText}
+                  as="div"
+                >
+                  Posts
+                </SidebarItem>
+              </Link>
+              <Link to={"/dashboard?tab=users"}>
+                <SidebarItem
+                  active={tab === "users"}
+                  icon={HiOutlineUserGroup}
+                  as="div"
+                >
+                  Users
+                </SidebarItem>
+              </Link>
+            </>
           )}
           <SidebarItem
             icon={HiArrowSmRight}
