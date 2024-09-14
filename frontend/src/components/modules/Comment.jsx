@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
+import { Button, Textarea } from "flowbite-react";
 import { useSelector } from "react-redux";
 import { FaThumbsUp } from "react-icons/fa";
-import { Button, Textarea } from "flowbite-react";
+
 import PropTypes from "prop-types";
 import moment from "moment";
 
-const Comment = ({ comment, commentLikeHandler, saveEditHandler }) => {
+const Comment = ({
+  comment,
+  commentLikeHandler,
+  saveEditHandler,
+  onDelete,
+}) => {
   // ================ Redux ===============
   const { currentUser } = useSelector((state) => state.user);
 
@@ -127,14 +133,24 @@ const Comment = ({ comment, commentLikeHandler, saveEditHandler }) => {
               {currentUser &&
                 (currentUser?._id === comment.userId ||
                   currentUser?.isAdmin) && (
-                  <button
-                    type="button"
-                    onClick={editHandler}
-                    className="text-gray-400 hover:text-red-500"
-                    aria-label="Edit comment"
-                  >
-                    Edit
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={editHandler}
+                      aria-label="Edit comment"
+                      className="text-gray-400 hover:text-blue-500"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Edit comment"
+                      onClick={() => onDelete(comment._id)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      Delete
+                    </button>
+                  </>
                 )}
             </div>
           </>
@@ -154,8 +170,9 @@ Comment.propTypes = {
     numberOfLikes: PropTypes.number.isRequired,
     likes: PropTypes.arrayOf(PropTypes.string).isRequired,
   }).isRequired,
-  commentLikeHandler: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
   saveEditHandler: PropTypes.func.isRequired,
+  commentLikeHandler: PropTypes.func.isRequired,
 };
 
 export default Comment;
