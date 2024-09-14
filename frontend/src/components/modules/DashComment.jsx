@@ -20,26 +20,26 @@ import {
   TableRow,
 } from "flowbite-react";
 
-const DashUsers = () => {
+const DashComment = () => {
   // ==================== State ==============
-  const [users, setUsers] = useState([]);
+  const [comments, setComments] = useState([]);
   const [showMore, setShowMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [userIdToDelete, setUserIdToDelete] = useState("");
+  const [commentIdToDelete, setCommentIdToDelete] = useState("");
 
   // ==================== Redux ==============
   const { currentUser } = useSelector((state) => state.user);
 
   // ==================== Effect ==============
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchComments = async () => {
       try {
-        const response = await fetch("/api/user/getusers");
+        const response = await fetch("/api/comment/getcomments");
         const responseData = await response.json();
         console.log(response);
         if (response.ok) {
-          setUsers(responseData.users);
-          if (responseData.users.length < 9) {
+          setComments(responseData.comments);
+          if (responseData.comments.length < 9) {
             setShowMore(false);
           }
         }
@@ -47,37 +47,42 @@ const DashUsers = () => {
         console.log(error);
       }
     };
-    if (currentUser.isAdmin) fetchUsers();
+    if (currentUser.isAdmin) fetchComments();
   }, [currentUser._id, currentUser.isAdmin]);
 
   // ==================== Function ==============
   const showMoreHandler = async () => {
-    const startIndex = users.length;
+    const startIndex = comments.length;
     try {
       const response = await fetch(
-        `/api/user/getusers?startIndex=${startIndex}`
+        `/api/user/getcomments?startIndex=${startIndex}`
       );
       const responseData = await response.json();
       if (response.ok) {
-        setUsers((prev) => [...prev, ...responseData.users]);
-        if (responseData.users.length < 9) setShowMore(false);
+        setComments((prev) => [...prev, ...responseData.comments]);
+        if (responseData.comments.length < 9) setShowMore(false);
       }
     } catch (error) {
       console.log(error.message);
     }
   };
 
-  const deleteUserHandler = async () => {
+  const deleteCommentHandler = async () => {
     setShowModal(false);
     try {
-      const response = await fetch(`/api/user/delete/${userIdToDelete}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/comment/deleteComment/${commentIdToDelete}`,
+        {
+          method: "DELETE",
+        }
+      );
       const responseData = await response.json();
       if (response.ok) {
-        setUsers((prev) => prev.filter((user) => user._id !== userIdToDelete));
+        setComments((prev) =>
+          prev.filter((comment) => comment._id !== commentIdToDelete)
+        );
         setShowModal(false);
-        toast.success("User Deleted Successfully");
+        toast.success("Comment Deleted Successfully");
       } else {
         console.log(responseData.message);
       }
@@ -101,48 +106,32 @@ const DashUsers = () => {
             dark:scrollbar-thumb-slate-500 
        "
     >
-      {currentUser.isAdmin && users.length ? (
+      {currentUser.isAdmin && comments.length ? (
         <>
           <Table className="shadow-lg" hoverable>
             <TableHead>
-              <TableHeadCell>Date Created</TableHeadCell>
-              <TableHeadCell>User image</TableHeadCell>
-              <TableHeadCell>Username</TableHeadCell>
-              <TableHeadCell>Email</TableHeadCell>
-              <TableHeadCell>Admin</TableHeadCell>
+              <TableHeadCell>Date Updated</TableHeadCell>
+              <TableHeadCell>Comment Content</TableHeadCell>
+              <TableHeadCell>Number of Likes</TableHeadCell>
+              <TableHeadCell>PostId</TableHeadCell>
+              <TableHeadCell>UserId</TableHeadCell>
               <TableHeadCell>Delete</TableHeadCell>
             </TableHead>
-            {users.map((user) => (
+            {comments.map((comment) => (
               <TableBody key={uuidv4()} className="divide-y">
                 <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
                   <TableCell>
-                    {new Date(user.createdAt).toLocaleDateString()}
+                    {new Date(comment.updatedAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
-                    <img
-                      src={
-                        user.profilePicture
-                          ? user.profilePicture
-                          : "https://img.icons8.com/color/48/gender-neutral-user.png"
-                      }
-                      alt={user.username}
-                      className="w-10 h-10 object-cover bg-gray-500 rounded-full"
-                    />
-                  </TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    {user.isAdmin ? (
-                      <FaCheck />
-                    ) : (
-                      <FaTimes className="text-red-500" />
-                    )}
-                  </TableCell>
+                  <TableCell>{comment.content}</TableCell>
+                  <TableCell>{comment.numberOfLikes}</TableCell>
+                  <TableCell>{comment.postId}</TableCell>
+                  <TableCell>{comment.userId}</TableCell>
                   <TableCell>
                     <span
                       onClick={() => {
                         setShowModal(true);
-                        setUserIdToDelete(user._id);
+                        setCommentIdToDelete(comment._id);
                       }}
                       className="font-medium text-red-500 hover:underline cursor-pointer"
                     >
@@ -164,7 +153,7 @@ const DashUsers = () => {
         </>
       ) : (
         <div className="flex flex-col items-center justify-center min-h-screen">
-          <p>You have no users yet!</p>
+          <p>You have no comments yet!</p>
           <DotLoader color="#24d321" />
         </div>
       )}
@@ -182,7 +171,7 @@ const DashUsers = () => {
               Are you sure you want to delete this Users?
             </h3>
             <div className="flex justify-center gap-4">
-              <Button color={"failure"} onClick={deleteUserHandler}>
+              <Button color={"failure"} onClick={deleteCommentHandler}>
                 Yes, I&apos;m sure
               </Button>
               <Button color={"gray"} onClick={() => setShowModal(false)}>
@@ -196,4 +185,4 @@ const DashUsers = () => {
   );
 };
 
-export default DashUsers;
+export default DashComment;

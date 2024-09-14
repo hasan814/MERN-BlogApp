@@ -6,6 +6,7 @@ import { signoutSuccess } from "../../redux/user/userSlice";
 import toast from "react-hot-toast";
 
 import {
+  HiAnnotation,
   HiArrowSmRight,
   HiDocumentText,
   HiOutlineUserGroup,
@@ -89,6 +90,15 @@ const DashSidebar = () => {
                   as="div"
                 >
                   Users
+                </SidebarItem>
+              </Link>
+              <Link to={"/dashboard?tab=comments"}>
+                <SidebarItem
+                  active={tab === "users"}
+                  icon={HiAnnotation}
+                  as="div"
+                >
+                  Comments
                 </SidebarItem>
               </Link>
             </>
