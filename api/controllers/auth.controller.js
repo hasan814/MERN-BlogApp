@@ -7,7 +7,6 @@ import jwt from "jsonwebtoken";
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  // Check if all fields are provided
   if (
     !username ||
     !email ||
@@ -34,7 +33,6 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Check if all fields are provided
   if (!email || !password || email === "" || password === "") {
     return next(errorHandler(400, "All fields are required."));
   }
@@ -52,7 +50,8 @@ export const signin = async (req, res, next) => {
 
     const token = jwt.sign(
       { id: validUser._id, isAdmin: validUser.isAdmin },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
     );
 
     const { password: pass, ...rest } = validUser._doc;
@@ -62,7 +61,8 @@ export const signin = async (req, res, next) => {
       .cookie("access_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-      }) // Add secure flag if in production
+        maxAge: 24 * 60 * 60 * 1000,
+      })
       .json({
         message: "Signed in successfully!",
         user: rest,
@@ -80,13 +80,15 @@ export const google = async (req, res, next) => {
     if (user) {
       const token = jwt.sign(
         { id: user._id, isAdmin: user.isAdmin },
-        process.env.JWT_SECRET
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" }
       );
       const { password, ...rest } = user._doc;
       res
         .status(200)
         .cookie("access_token", token, {
           httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000,
         })
         .json(rest);
     } else {
@@ -110,7 +112,10 @@ export const google = async (req, res, next) => {
       const { password, ...rest } = newUser._doc;
       res
         .status(200)
-        .cookie("access_token", token, { httpOnly: true })
+        .cookie("access_token", token, {
+          httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        })
         .json(rest);
     }
   } catch (error) {

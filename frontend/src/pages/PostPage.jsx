@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import { HashLoader } from "react-spinners";
 import { Button } from "flowbite-react";
 
 import CommentSection from "../components/modules/CommentSection";
 import CallToAction from "../components/modules/CallToAction";
+import PostCard from "../components/modules/PostCard";
 
 const PostPage = () => {
   // ============== State ===============
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [post, setPost] = useState(null);
+  const [recentPosts, setRecentPosts] = useState(null);
 
   // ============== Params ===============
   const { postSlug } = useParams();
@@ -23,23 +25,35 @@ const PostPage = () => {
         const response = await fetch(`/api/post/getposts?slug=${postSlug}`);
         const responseData = await response.json();
         if (!response.ok) {
-          setError(true);
           setLoading(false);
           return;
         }
         if (response.ok) {
           setPost(responseData.posts[0]);
           setLoading(false);
-          setError(false);
         }
       } catch (error) {
         console.log(error);
-        setError(true);
         setLoading(false);
       }
     };
     fetchPost();
   }, [postSlug]);
+
+  useEffect(() => {
+    try {
+      const fetchRecentPost = async () => {
+        const response = await fetch(`/api/post/getposts?limit=3`);
+        const responseData = await response.json();
+        if (response.ok) {
+          setRecentPosts(responseData.posts);
+        }
+      };
+      fetchRecentPost();
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   // ============== Rendering ===============
   if (loading)
@@ -80,6 +94,13 @@ const PostPage = () => {
         <CallToAction />
       </div>
       <CommentSection postId={post._id} />
+      <div className="flex flex-col justify-center items-center mb-5">
+        <h1 className="text-xl mt-5">Recent articles</h1>
+        <div className="flex flex-wrap gap-5 mt-5 justify-center">
+          {recentPosts &&
+            recentPosts.map((post) => <PostCard key={uuidv4()} post={post} />)}
+        </div>
+      </div>
     </main>
   );
 };
