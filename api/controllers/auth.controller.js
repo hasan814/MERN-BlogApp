@@ -52,13 +52,9 @@ export const signin = async (req, res, next) => {
 
     const token = jwt.sign(
       { id: validUser._id, isAdmin: validUser.isAdmin },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
+      process.env.JWT_SECRET
     );
 
-    // Exclude password from user data in the response
     const { password: pass, ...rest } = validUser._doc;
 
     return res
@@ -69,7 +65,7 @@ export const signin = async (req, res, next) => {
       }) // Add secure flag if in production
       .json({
         message: "Signed in successfully!",
-        user: rest, // Send user details excluding the password
+        user: rest,
       });
   } catch (error) {
     return next(error);

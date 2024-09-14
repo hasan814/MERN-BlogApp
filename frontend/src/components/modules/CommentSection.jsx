@@ -118,6 +118,15 @@ const CommentSection = ({ postId }) => {
     }
   };
 
+  // =============== Edit Hanlder =================
+  const saveEditHandler = (updatedComment) => {
+    setComments((prevComments) =>
+      prevComments.map((comment) =>
+        comment._id === updatedComment._id ? updatedComment : comment
+      )
+    );
+  };
+
   // =============== Rendering =================
   return (
     <div className="max-w-2xl mx-auto w-full p-3">
@@ -172,6 +181,7 @@ const CommentSection = ({ postId }) => {
             <Comment
               key={uuidv4()}
               comment={comment}
+              saveEditHandler={saveEditHandler}
               commentLikeHandler={commentLikeHandler}
             />
           ))}
