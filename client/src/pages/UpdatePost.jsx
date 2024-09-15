@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import { app } from "../firebase";
 
 import ReactQuill from "react-quill";
@@ -92,7 +93,7 @@ const UpdatePost = () => {
       if (response.ok) {
         setPublishError(null);
         navigate(`/post/${responseData.slug}`);
-        toast.success("Post Updated Succesfully");
+        toast.success("Post Updated Successfully");
       }
     } catch (error) {
       console.log(error);
@@ -122,12 +123,37 @@ const UpdatePost = () => {
     }
   }, [postId]);
 
+  // Framer Motion Variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const staggerContainer = {
+    visible: {
+      transition: { staggerChildren: 0.2 },
+    },
+  };
+
   // =============== Rendering =============
   return (
-    <div className="p-3 max-w-3xl mx-auto min-h-screen">
-      <h1 className="text-center text-3xl my-7 font-semibold">Update Post</h1>
+    <motion.div
+      className="p-3 max-w-3xl mx-auto min-h-screen"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      <motion.h1
+        className="text-center text-3xl my-7 font-semibold"
+        variants={fadeInUp}
+      >
+        Update Post
+      </motion.h1>
       <form className="flex flex-col gap-4" onSubmit={submitHandler}>
-        <div className="flex flex-col gap-4 sm:flex-row justify-between">
+        <motion.div
+          className="flex flex-col gap-4 sm:flex-row justify-between"
+          variants={fadeInUp}
+        >
           <TextInput
             required
             id="title"
@@ -158,8 +184,11 @@ const UpdatePost = () => {
             <option value="nextjs">Cloud</option>
             <option value="nextjs">CSS</option>
           </Select>
-        </div>
-        <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
+        </motion.div>
+        <motion.div
+          className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3"
+          variants={fadeInUp}
+        >
           <FileInput
             type="file"
             accept="image/*"
@@ -184,13 +213,14 @@ const UpdatePost = () => {
               "Upload Image"
             )}
           </Button>
-        </div>
+        </motion.div>
         {imageUploadError && <Alert color="failure">{imageUploadError}</Alert>}
         {formData.image && (
-          <img
+          <motion.img
             src={formData.image}
             alt="upload"
             className="w-full h-72 object-cover"
+            variants={fadeInUp}
           />
         )}
         <ReactQuill
@@ -208,7 +238,7 @@ const UpdatePost = () => {
         </Button>
         {publishError && <Alert color={"failure"}>{publishError}</Alert>}
       </form>
-    </div>
+    </motion.div>
   );
 };
 

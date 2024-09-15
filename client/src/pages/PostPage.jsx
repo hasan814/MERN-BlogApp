@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { HashLoader } from "react-spinners";
 import { Button } from "flowbite-react";
+import { motion } from "framer-motion"; // Import framer-motion
 
 import CommentSection from "../components/modules/CommentSection";
 import CallToAction from "../components/modules/CallToAction";
@@ -55,6 +56,18 @@ const PostPage = () => {
     }
   }, []);
 
+  // Framer Motion Variants
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const staggerContainer = {
+    visible: {
+      transition: { staggerChildren: 0.1 },
+    },
+  };
+
   // ============== Rendering ===============
   if (loading)
     return (
@@ -63,45 +76,64 @@ const PostPage = () => {
       </div>
     );
   return (
-    <main className="p-3 flex flex-col max-w-6xl mx-auto min-h-screen">
-      <h1 className="text-3xl mt-10 p-3 text-center font-serif max-w-2xl mx-auto lg:text-4xl">
-        {post && post.title}
-      </h1>
-      <Link
-        to={`/search?category=${post && post.category}`}
-        className="self-center mt-5"
+    <motion.main
+      className="p-3 flex flex-col max-w-6xl mx-auto min-h-screen"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
+      <motion.h1
+        className="text-3xl mt-10 p-3 text-center font-serif max-w-2xl mx-auto lg:text-4xl"
+        variants={fadeIn}
       >
-        <Button color="gray" pill className="capitalize" size="xs">
-          {post && post.category}
-        </Button>
-      </Link>
-      <img
+        {post && post.title}
+      </motion.h1>
+      <motion.div className="self-center mt-5" variants={fadeIn}>
+        <Link to={`/search?category=${post && post.category}`}>
+          <Button color="gray" pill className="capitalize" size="xs">
+            {post && post.category}
+          </Button>
+        </Link>
+      </motion.div>
+      <motion.img
+        variants={fadeIn}
         src={post && post.image}
-        alt={post && post.image}
+        alt={post && post.title}
         className="rounded-md shadow-lg mt-10 p-3 max-h-[600px] w-full object-cover"
       />
-      <div className="p-3 flex justify-between border-b border-slate-500 mx-auto w-full max-w-2xl text-xs">
+      <motion.div
+        className="p-3 flex justify-between border-b border-slate-500 mx-auto w-full max-w-2xl text-xs"
+        variants={fadeIn}
+      >
         <span>{post && new Date(post.createdAt).toLocaleDateString()}</span>
         <span className="italic">
           {post && (post.content.length / 1000).toFixed(0)} mins read
         </span>
-      </div>
-      <div
+      </motion.div>
+      <motion.div
         className="p-3 max-w-2xl mx-auto w-full post-content"
         dangerouslySetInnerHTML={{ __html: post && post.content }}
-      ></div>
-      <div className="max-w-4xl mx-auto w-full">
+        variants={fadeIn}
+      ></motion.div>
+      <motion.div className="max-w-4xl mx-auto w-full" variants={fadeIn}>
         <CallToAction />
-      </div>
+      </motion.div>
       <CommentSection postId={post._id} />
-      <div className="flex flex-col justify-center items-center mb-5">
+      <motion.div
+        className="flex flex-col justify-center items-center mb-5"
+        variants={staggerContainer}
+      >
         <h1 className="text-xl mt-5">Recent articles</h1>
         <div className="flex flex-wrap gap-5 mt-5 justify-center">
           {recentPosts &&
-            recentPosts.map((post) => <PostCard key={uuidv4()} post={post} />)}
+            recentPosts.map((post) => (
+              <motion.div key={uuidv4()} variants={fadeIn}>
+                <PostCard post={post} />
+              </motion.div>
+            ))}
         </div>
-      </div>
-    </main>
+      </motion.div>
+    </motion.main>
   );
 };
 

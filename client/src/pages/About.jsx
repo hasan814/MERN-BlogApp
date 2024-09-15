@@ -1,15 +1,42 @@
-import React from "react";
+import { motion } from "framer-motion";
 
 const About = () => {
+  // ============= Animation variants ===================
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const textVariants = {
+    hidden: { opacity: 0, x: -30 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.8, delay: 0.2 } },
+  };
+
+  const paragraphVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 1, delay: 0.4 } },
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-2xl mx-auto p-3">
+    <motion.div
+      className="min-h-screen flex items-center justify-center"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div className="max-w-2xl mx-auto p-3" variants={textVariants}>
         <div>
-          <h1 className="text-3xl font-semibold text-center my-6">
+          <motion.h1
+            className="text-3xl font-semibold text-center my-6"
+            variants={textVariants}
+          >
             About Blog App
-          </h1>
-          <div className="text-justify text-md text-gray-500 flex flex-col gap-6">
-            <p>
+          </motion.h1>
+          <motion.div
+            className="text-justify text-md text-gray-500 flex flex-col gap-6"
+            variants={paragraphVariants}
+          >
+            <motion.p>
               A Blog App serves as an essential platform for both content
               creators and readers to share and engage with written material. It
               allows authors to publish blog posts on a variety of topics,
@@ -22,8 +49,8 @@ const About = () => {
               tags, or keywords, while readers can also interact with posts by
               leaving comments, starting discussions, or sharing content across
               social media platforms.
-            </p>
-            <p>
+            </motion.p>
+            <motion.p>
               For authors and admins, the app offers comprehensive tools to
               manage content and engage with their audience effectively. An
               admin dashboard allows users with the necessary privileges to
@@ -35,8 +62,8 @@ const About = () => {
               content. Additionally, advanced features like role-based access,
               SEO optimization, and analytics can help authors increase
               visibility and measure the impact of their posts.
-            </p>
-            <p>
+            </motion.p>
+            <motion.p>
               From a technical perspective, Blog Apps are often built using
               modern web technologies like React.js and Next.js for their
               dynamic and responsive frontend, paired with backend technologies
@@ -49,11 +76,11 @@ const About = () => {
               with cloud-based solutions for media hosting and scalability, Blog
               Apps offer flexibility and efficiency in managing large amounts of
               content and traffic.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

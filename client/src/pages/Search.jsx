@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { HashLoader } from "react-spinners";
+import { motion } from "framer-motion"; // Import framer-motion
 
 import PostCard from "../components/modules/PostCard";
 
@@ -23,7 +24,7 @@ const Search = () => {
     category: "uncategorized",
   });
 
-  // ============== Effect ===============\
+  // ============== Effect ===============
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const searchTermFormUrl = urlParams.get("searchTerm");
@@ -87,7 +88,7 @@ const Search = () => {
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("startIndex", startIndex);
     const searchQuery = urlParams.toString();
-    const response = await fetch(`/api/post/getPosts${searchQuery}`);
+    const response = await fetch(`/api/post/getPosts?${searchQuery}`);
     const responseData = await response.json();
     if (!response.ok) return;
     if (response.ok) {
@@ -97,12 +98,29 @@ const Search = () => {
     }
   };
 
+  // Framer Motion animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const staggerContainer = {
+    visible: {
+      transition: { staggerChildren: 0.1 },
+    },
+  };
+
   // ============== Rendering ===============
   return (
     <div className="flex flex-col md:flex-row">
-      <div className="p-7 border-b md:border-r md:min-h-screen border-gray-500">
+      <motion.div
+        className="p-7 border-b md:border-r md:min-h-screen border-gray-500"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+      >
         <form className="flex flex-col gap-8" onSubmit={submitHandler}>
-          <div className="flex items-center gap-2">
+          <motion.div className="flex items-center gap-2" variants={fadeInUp}>
             <label className="font-semibold whitespace-nowrap">
               Search Term:
             </label>
@@ -114,8 +132,8 @@ const Search = () => {
               onChange={changeHandler}
               value={sidebarData.searchTerm}
             />
-          </div>
-          <div className="flex items-center gap-2">
+          </motion.div>
+          <motion.div className="flex items-center gap-2" variants={fadeInUp}>
             <label className="font-semibold">Sort:</label>
             <Select
               id="sort"
@@ -126,8 +144,8 @@ const Search = () => {
               <option value="desc">Latest</option>
               <option value="asc">Oldest</option>
             </Select>
-          </div>
-          <div className="flex items-center gap-2">
+          </motion.div>
+          <motion.div className="flex items-center gap-2" variants={fadeInUp}>
             <label className="font-semibold">Category:</label>
             <Select
               id="category"
@@ -140,33 +158,50 @@ const Search = () => {
               <option value="nextjs">Next.js</option>
               <option value="javascript">javaScript</option>
             </Select>
-          </div>
-          <Button type="submit" outline gradientDuoTone={"purpleToPink"}>
-            Apply Filters
-          </Button>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <Button type="submit" outline gradientDuoTone={"purpleToPink"}>
+              Apply Filters
+            </Button>
+          </motion.div>
         </form>
-      </div>
+      </motion.div>
       <div className="w-full">
-        <h1 className="text-3xl font-semibold sm:border-b border-gray-500 p-3 mt-5 text-center">
+        <motion.h1
+          className="text-3xl font-semibold sm:border-b border-gray-500 p-3 mt-5 text-center"
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+        >
           Post Results
-        </h1>
-        <div className="p-7 flex flex-wrap gap-4">
+        </motion.h1>
+        <motion.div
+          className="p-7 flex flex-wrap gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+        >
           {!loading && posts.length === 0 && (
             <p className="text-xl text-gray-500">No Posts found.</p>
           )}
           {loading && <HashLoader color="#25bc58" />}
           {!loading &&
             posts &&
-            posts.map((post) => <PostCard post={post} key={uuidv4()} />)}
+            posts.map((post) => (
+              <motion.div key={uuidv4()} variants={fadeInUp}>
+                <PostCard post={post} />
+              </motion.div>
+            ))}
           {showMore && (
-            <button
+            <motion.button
               onClick={showMoreHandler}
               className="text-teal-500 text-lg hover:underline p-7 w-full"
+              variants={fadeInUp}
             >
               Show more
-            </button>
+            </motion.button>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

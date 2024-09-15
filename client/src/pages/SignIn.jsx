@@ -1,14 +1,17 @@
 import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { motion } from "framer-motion";
+
+import toast from "react-hot-toast";
+import OAuth from "../components/modules/OAuth";
+
 import {
   signInFailure,
   signInStart,
   signInSuccess,
 } from "../redux/user/userSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import OAuth from "../components/modules/OAuth";
 
 const SignIn = () => {
   // ============ Dispatch ============
@@ -22,6 +25,7 @@ const SignIn = () => {
 
   // ============ Selector ============
   const { loading, error: errorMessage } = useSelector((state) => state.user);
+
   // ============ Function ============
   const changeHandler = (event) => {
     const { id, value } = event.target;
@@ -54,12 +58,29 @@ const SignIn = () => {
     }
   };
 
+  // Framer Motion Variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const staggerContainer = {
+    visible: {
+      transition: { staggerChildren: 0.2 },
+    },
+  };
+
   // ============ Rendering ============
   return (
-    <div className="mt-20 min-h-screen">
+    <motion.div
+      className="mt-20 min-h-screen"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
       <div className="flex p-3 max-w-3xl mx-auto flex-col md:flex-row md:items-center gap-5">
-        <div className="flex-1">
-          <Link to={"/"} className=" text-4xl font-bold dark:text-white">
+        <motion.div className="flex-1" variants={fadeInUp}>
+          <Link to={"/"} className="text-4xl font-bold dark:text-white">
             <span className="px-2 py-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg text-white">
               Blog App
             </span>
@@ -67,10 +88,10 @@ const SignIn = () => {
           <p className="text-sm mt-5">
             You can sign in with your email and password
           </p>
-        </div>
-        <div className="flex-1">
+        </motion.div>
+        <motion.div className="flex-1" variants={fadeInUp}>
           <form className="flex flex-col gap-4" onSubmit={submitHandler}>
-            <div>
+            <motion.div variants={fadeInUp}>
               <Label value="Your Email" />
               <TextInput
                 type="email"
@@ -78,8 +99,8 @@ const SignIn = () => {
                 placeholder="Email..."
                 onChange={changeHandler}
               />
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={fadeInUp}>
               <Label value="Your Password" />
               <TextInput
                 type="password"
@@ -87,37 +108,42 @@ const SignIn = () => {
                 placeholder="**********"
                 onChange={changeHandler}
               />
-            </div>
-            <Button
-              gradientDuoTone="purpleToPink"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Spinner size={"sm"} />
-                  <span className="pl-3">Loading...</span>
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
+            </motion.div>
+            <motion.div variants={fadeInUp}>
+              <Button
+                gradientDuoTone="purpleToPink"
+                type="submit"
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? (
+                  <>
+                    <Spinner size={"sm"} />
+                    <span className="pl-3">Loading...</span>
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
+            </motion.div>
             <OAuth />
           </form>
-          <div className="flex gap-2 text-sm mt-5">
+          <motion.div className="flex gap-2 text-sm mt-5" variants={fadeInUp}>
             <span>Don&apos;t Have an Account?</span>
             <Link to={"/sign-up"} className="text-blue-500">
               Sign Up
             </Link>
-          </div>
+          </motion.div>
           {errorMessage && (
-            <Alert className="mt-5" color={"failure"}>
-              {errorMessage}
-            </Alert>
+            <motion.div variants={fadeInUp}>
+              <Alert className="mt-5" color={"failure"}>
+                {errorMessage}
+              </Alert>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

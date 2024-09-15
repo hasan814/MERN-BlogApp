@@ -15,13 +15,17 @@ const CallToAction = () => {
           Learn More
         </Button>
       </div>
-      <div className="p-7 flex-1">
+      <div className="p-7 flex-1 ml-auto">
         <a
           href="https://www.100newjsprojects.com"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <img src="/src/assets/JS.jpg" alt="JavaScript Projects" />
+          <img
+            src="https://www.squash.io/wp-content/uploads/2023/11/javascript-series.jpg"
+            alt="JavaScript Projects"
+            className="w-[500px] h-[300px]"
+          />
         </a>
       </div>
     </div>
